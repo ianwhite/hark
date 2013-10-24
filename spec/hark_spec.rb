@@ -91,8 +91,8 @@ describe Hark do
     it_should_behave_like "a success/failure hark listener"
   end
 
-  describe "object.to_hark" do
-    Given(:listener) { PlainListener.new(transcript).to_hark }
+  describe "hark object" do
+    Given(:listener) { hark PlainListener.new(transcript) }
 
     it_should_behave_like "a success/failure hark listener"
   end

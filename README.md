@@ -2,11 +2,29 @@
 
 Create an ad-hoc listener object with hark.
 
+## Installation
+
+Add this line to your application's Gemfile:
+
+    gem 'ianwhite-hark'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install ianwhite-hark
+
+## Usage
+
 The idea behind hark is that the objects that receive listeners shouldn't need to perform any ceremony on
 them, just treat them as objects that respond to messages.  It's up to the caller to provide these lsitener objects,
-and to decide how they behave (re: lax), perhaps smushing together listeners (re: add).  If required, these ad-hoc
+and to decide how they behave, perhaps combining together listeners (in an subscriber fashion).  If required, these ad-hoc
 listeners can easily be refactored into classes in their own right, as the recievers don't need to know anything about
 hark.
+
+Tell don't ask style is encouraged with hark.  That said, the return value for a message sent to a hark listener is an array of all of the return values.
 
     listener = hark success: ->{ "succeeded" }, failure: ->{ "failed" }
     listener.success # => ["succeeded"]
@@ -38,27 +56,23 @@ To add new messages to a listener, use #hark
 
 To decorate an object (of any sort) so that it becomes a hark listener (and therefore can be smushed etc)
 
-    listener = object.to_hark
+    listener = hark(object)
 
 The listener is immutable, #strict, #lax, and #hark all return new listeners
 
-## Installation
+Here's an example from a rails controller
 
-Add this line to your application's Gemfile:
+    def create
+      SignupNewUser.new params, hark(create_response, SignupEmailer.new)
+    end
 
-    gem 'ianwhite-hark'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install ianwhite-hark
-
-## Usage
-
-TODO: Write usage instructions here
+    # response block style
+    def create_response
+      hark do |on|
+        on.signed_up {|user| redirect_to user, notice: "Signed up!" }
+        on.invalid {|user| render "new", user: user }
+      end
+    end
 
 ## Contributing
 
