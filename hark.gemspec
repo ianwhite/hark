@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Hark::VERSION
   spec.authors       = ["Ian White"]
   spec.email         = ["ian.w.white@gmail.com"]
-  spec.description   = %q{Create ad-hox listener objects with impunity}
+  spec.description   = %q{Create ad-hoc listener objects with impunity}
   spec.summary       = %q{Hark is a gem that enables  writing code in a 'hexagonal architecture' style}
   spec.homepage      = "http://github.com/ianwhite/hark"
   spec.license       = "MIT"
