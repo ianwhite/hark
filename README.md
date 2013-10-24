@@ -46,7 +46,7 @@ The listener is immutable, #strict, #lax, and #hark all return new listeners
 
 Add this line to your application's Gemfile:
 
-    gem 'hark'
+    gem 'ianwhite-hark'
 
 And then execute:
 
@@ -54,7 +54,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install hark
+    $ gem install ianwhite-hark
 
 ## Usage
 
