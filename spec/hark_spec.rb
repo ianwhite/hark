@@ -38,17 +38,17 @@ describe Hark do
 
   shared_examples_for "a success/failure hark listener" do
     it_should_behave_like "a success/failure listener"
-    it_should_behave_like "a lax listener" do
-      Given(:lax_listener) { listener }
+    it_should_behave_like "a strict listener" do
+      Given(:strict_listener) { listener }
     end
 
-    context "when made strict" do
-      Given(:strict_listener) { listener.strict }
-      it_should_behave_like "a strict listener"
+    context "when made lax" do
+      Given(:lax_listener) { listener.lax }
+      it_should_behave_like "a lax listener"
 
-      context "and made lax again" do
-        Given(:lax_listener) { strict_listener.lax }
-        it_should_behave_like "a lax listener"
+      context "and made strict again" do
+        Given(:strict_listener) { lax_listener.strict }
+        it_should_behave_like "a strict listener"
       end
     end
   end

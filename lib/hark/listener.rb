@@ -1,14 +1,14 @@
 module Hark
   # A Listener holds a dispatcher, which it dispatches messages to
   #
-  # A listener is by default a 'lax' listener, it will silently swallow any unknown messages
+  # A listener is by default a 'strict' listener, it will raise NoMethodError if
+  # it is sent a message it doesn't know how to handle.
   #
-  # A listener can be turned into a 'strict' listener, by sending it the #strict message.
-  # A strict listener will raise NoMethodError if it is sent a message it doesn't know
-  # how to handle.
+  # A listener can be turned into a 'lax' listener, by sending it the #lax message.
+  # A lax listener will silently swallow any unknown messages.
   class Listener
     def self.new *args, &block
-      self == Listener ? LaxListener.new(*args, &block) : super(*args, &block)
+      self == Listener ? StrictListener.new(*args, &block) : super(*args, &block)
     end
 
     attr_reader :dispatcher
