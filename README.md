@@ -1,6 +1,12 @@
 # Hark
 
-Create an ad-hoc listener object with Hark.
+Create an ad-hoc listener object with hark.
+
+The idea behind hark is that the objects that receive listeners shouldn't need to perform any ceremony on
+them, just treat them as objects that respond to messages.  It's up to the caller to provide these lsitener objects,
+and to decide how they behave (re: lax), perhaps smushing together listeners (re: add).  If required, these ad-hoc
+listeners can easily be refactored into classes in their own right, as the recievers don't need to know anything about
+hark.
 
   listener = hark success: ->{ "succeeded" }, failure: ->{ "failed" }
   listener.success # => ["succeeded"]
@@ -23,23 +29,18 @@ To smush together listeners, use #hark
 
   listener = listener.hark other_listener
   listener = listener.hark emailer, logger
+  listener = hark(emailer, logger, twitter_notifier)
 
 To add new messages to a listener, use #hark
 
-  listener = listener.hark(:success) { "huge success" }
-  listener.success # => ["success", "huge success"]
+  listener = listener.hark(:success) { "extra success" }
+  listener.success # => ["success", "extra success"]
 
 To decorate an object (of any sort) so that it becomes a hark listener (and therefore can be smushed etc)
 
-  listener = hark object
+  listener = object.to_hark
 
-The listener is immutable, #strict, #lax, and #add all return new listeners
-
-The idea behind hark is that the objects that receive listeners shouldn't need to perform any ceremony on
-them, just treat them as objects that respond to messages.  It's up to the caller to provide these lsitener objects,
-and to decide how they behave (re: lax), perhaps smushing together listeners (re: add).  If required, these ad-hoc
-listeners can easily be refactored into classes in their own right, as the recievers don't need to know anything about
-hark.
+The listener is immutable, #strict, #lax, and #hark all return new listeners
 
 ## Installation
 
