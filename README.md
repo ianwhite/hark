@@ -8,37 +8,37 @@ and to decide how they behave (re: lax), perhaps smushing together listeners (re
 listeners can easily be refactored into classes in their own right, as the recievers don't need to know anything about
 hark.
 
-  listener = hark success: ->{ "succeeded" }, failure: ->{ "failed" }
-  listener.success # => ["succeeded"]
-  listener.failure # => ["failed"]
-  listener.unknown # raises NoMethodError
+    listener = hark success: ->{ "succeeded" }, failure: ->{ "failed" }
+    listener.success # => ["succeeded"]
+    listener.failure # => ["failed"]
+    listener.unknown # raises NoMethodError
 
 Listeners return an array of return values, but using return values is discouraged (tell don't ask)
 
 To create a listener that silently swallows unknown messages, send it the #lax method
 
-  listener = hark(success: ->{ "succeeded" }).lax
-  listener.success # => ["succeeded"]
-  listener.unknown # => []
+    listener = hark(success: ->{ "succeeded" }).lax
+    listener.success # => ["succeeded"]
+    listener.unknown # => []
 
 To make a lax listener strict again, send it the #strict method
 
-  listener = listener.strict
+    listener = listener.strict
 
 To smush together listeners, use #hark
 
-  listener = listener.hark other_listener
-  listener = listener.hark emailer, logger
-  listener = hark(emailer, logger, twitter_notifier)
+    listener = listener.hark other_listener
+    listener = listener.hark emailer, logger
+    listener = hark(emailer, logger, twitter_notifier)
 
 To add new messages to a listener, use #hark
 
-  listener = listener.hark(:success) { "extra success" }
-  listener.success # => ["success", "extra success"]
+    listener = listener.hark(:success) { "extra success" }
+    listener.success # => ["success", "extra success"]
 
 To decorate an object (of any sort) so that it becomes a hark listener (and therefore can be smushed etc)
 
-  listener = object.to_hark
+    listener = object.to_hark
 
 The listener is immutable, #strict, #lax, and #hark all return new listeners
 
