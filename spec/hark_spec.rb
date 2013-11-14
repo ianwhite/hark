@@ -112,4 +112,11 @@ describe Hark do
     it { hark.lax.hark.should be_a Hark::LaxListener }
     it { hark.strict.hark.should be_a Hark::StrictListener }
   end
+
+  describe "when methods return falsy" do
+    let(:listener) { hark(:foo) { false } }
+
+    it { expect{ listener.foo }.to_not raise_error }
+    it { listener.foo.should == [false] }
+  end
 end

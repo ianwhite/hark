@@ -37,7 +37,12 @@ module Hark
     end
 
     def method_missing *args, &block
-      (results = dispatcher.handle(*args, &block)).any? ? results : super
+      results = dispatcher.handle(*args, &block)
+      if results.length > 0
+        results
+      else
+        super
+      end
     end
   end
 
