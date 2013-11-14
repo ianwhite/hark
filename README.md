@@ -1,7 +1,5 @@
 # Hark [![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark) [![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark)
 
-
-<img alt="Hark" height="18" src="https://d3s6mut3hikguw.cloudfront.net/github/ianwhite/hark.png" style="position: relative; top: 4px" width="97">
 Create an ad-hoc listener object with hark.
 
 ## Installation
