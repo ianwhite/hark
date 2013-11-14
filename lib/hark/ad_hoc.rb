@@ -29,6 +29,7 @@ module Hark
     end
 
     def add_method!(method, &body)
+      singleton_class = class << self; self; end
       singleton_class.send(:define_method, method) {|*args, &block| body.call(*args, &block) }
     end
 

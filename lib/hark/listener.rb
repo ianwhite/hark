@@ -32,8 +32,8 @@ module Hark
   end
 
   class StrictListener < Listener
-    def respond_to_missing? method, *args
-      dispatcher.handles?(method) || super
+    def respond_to?(method, *args)
+      super || dispatcher.handles?(method)
     end
 
     def method_missing *args, &block
@@ -42,7 +42,7 @@ module Hark
   end
 
   class LaxListener < Listener
-    def respond_to_missing? *args
+    def respond_to? *args
       true
     end
 

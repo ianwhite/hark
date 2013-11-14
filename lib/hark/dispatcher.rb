@@ -45,9 +45,11 @@ module Hark
     end
 
     def handle method, *args, &block
-      handlers.each_with_object([]) do |handler, results|
+      results = []
+      handlers.each do |handler|
         results << handler.send(method, *args, &block) if handler.respond_to?(method)
       end
+      results
     end
   end
 end
