@@ -6,7 +6,7 @@ Create an ad-hoc listener object with hark.
 
 Add this line to your application's Gemfile:
 
-    gem 'ianwhite-hark'
+    gem 'ianwhite-hark', :require => 'hark'
 
 And then execute:
 
