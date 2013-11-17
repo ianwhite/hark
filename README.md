@@ -1,4 +1,4 @@
-# Hark [![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark) [![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark)
+# Hark [![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark) [![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark) [![Coverage Status](https://coveralls.io/repos/ianwhite/hark/badge.png?branch=master)](https://coveralls.io/r/ianwhite/hark?branch=master)
 
 Create an ad-hoc listener object with hark.
 
