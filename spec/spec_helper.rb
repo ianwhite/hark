@@ -2,5 +2,8 @@ $LOAD_PATH.unshift File.dirname('../lib')
 
 require 'rspec'
 
-require 'coveralls'
-Coveralls.wear!
+begin
+  require 'coveralls'
+  Coveralls.wear!
+rescue LoadError
+end
