@@ -74,6 +74,8 @@ You create a 'lax' listener, responding to any message, by sending the `lax` mes
     listener.bar
     # => []
 
+To make a strict listener send the `strict` message.
+
 ### Combining listeners
 
 Here are some ways of combining listeners.
@@ -111,6 +113,10 @@ style of coding.  That said the return value of a hark listener is an array of i
     a.foo           # => ["a"]
     hark(a,b).foo   # => ["a", "b"]
     hark(a,b,c).foo # => ["a", "b", "c"]
+
+### Immutable
+
+Hark listeners are immutable and `#lax`, `#strict`, and `#hark` all return new listeners.
 
 ## Rationale
 
