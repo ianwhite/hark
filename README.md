@@ -25,7 +25,8 @@ Or install it yourself as:
 ## What & Why?
 
 **hark** enables you to create a 'listener' object very easily.  It's for programming in the 'hexagonal' or 'tell, do not ask' style.
-The consumers of hark listeners don't know anything about hark.  This makes refactoring easier.  For more detail see the 'Rationale' section.
+The consumers of hark listeners don't know anything about hark.  Because hark makes it easy to create ad-hoc object, it's easy to get
+started with a tell-dont-ask style, in rails controllers for examples.  For more detail see the 'Rationale' section.
 
 ## Usage
 
@@ -104,8 +105,8 @@ Using the return value of a listener is not encouraged.  Hark is designed for a 
 style of coding.  That said the return value of a hark listener is an array of its handlers return values.
 
     a = hark(:foo) { 'a' }
-    b = hark(:foo) { 'b' }
-    c = hark(:foo) { 'c' }
+    b = Object.new.tap {|o| o.singleton_class.send(:define_method, :foo) { 'b' } }
+    c = hark(foo: -> { 'c' }, bar: -> { 'c bar' })
 
     a.foo           # => ["a"]
     hark(a,b).foo   # => ["a", "b"]
@@ -173,14 +174,16 @@ There's quite a lot going on now, we can tie it up as follows:
 
     def crud_response
       hark do |on|
-        on.created {|user| redirect_to user, notice: "Welome!" }
-        on.invalid {|user| @user = user; render "new" }
+        on.created_user {|user| redirect_to user, notice: "Welome!" }
+        on.invalid_user {|user| @user = user; render "new" }
       end
     end
 
     def ux_team_response
-      hark(:invalid) {|user| logger.info("User invalid: #{user}") }
+      hark(:invalid_user) {|user| logger.info("User invalid: #{user}") }
     end
+
+Note that throughout this process we didn't have to modify the UserCreator code.
 
 ## Contributing
 
