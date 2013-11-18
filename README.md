@@ -24,9 +24,9 @@ Or install it yourself as:
 
 ## What & Why?
 
-**hark** enables you to create a 'listener' object very easily.  It's for programming in the 'hexagonal' or 'tell, do not ask' style.
+**hark** enables you to create a 'listener' object very easily.  It's for programming in the *hexagonal* or *tell, don't ask* style.
 The consumers of hark listeners don't know anything about hark.  Because hark makes it easy to create ad-hoc object, it's easy to get
-started with a tell-dont-ask style, in rails controllers for examples.  For more detail see the 'Rationale' section.
+started with a tell-dont-ask style, in rails controllers for example.  For more detail see the 'Rationale' section.
 
 ## Usage
 
@@ -131,7 +131,7 @@ As a simple example, a user creation service object defines a response protocol 
 
 The UserCreator object's main method will have some code as follows:
 
-    if user.save
+    if # some logic that means the user params were valid and we could persist the user
       response.created_user(user)
     else
       response.invalid_user(user)
@@ -166,13 +166,13 @@ to the same protocol.  Also, the UX team want to log invalid users.
 There's quite a lot going on now, we can tie it up as follows:
 
     def create
-      listener = hark(UserEmailer.new, crud_response, ux_team_response)
-      user_creator.call user_params, listener
+      response = hark(ui_response, UserEmailer.new, ux_team_response)
+      user_creator.call user_params, response
     end
 
     # UserEmailer responds to #created_user(user)
 
-    def crud_response
+    def ui_response
       hark do |on|
         on.created_user {|user| redirect_to user, notice: "Welome!" }
         on.invalid_user {|user| @user = user; render "new" }
@@ -183,7 +183,106 @@ There's quite a lot going on now, we can tie it up as follows:
       hark(:invalid_user) {|user| logger.info("User invalid: #{user}") }
     end
 
-Note that throughout this process we didn't have to modify the UserCreator code.
+If some of the response code gets hairy, we can easily swap out hark ad-hoc objects for 'proper' ones.
+For example, the UI response might get a bit hairy, and so we make a new object.
+
+    def create
+      response = hark(UiResponse.new(self), UserEmailer.new, ux_team_response)
+      user_creator.call user_params, response
+    end
+
+    class UiResponse < SimpleDelegator
+      def created_user user
+        if request.format.json?
+          # ...
+        else
+          # ...
+        end
+      end
+
+      def invalid_user user
+        # ...
+      end
+    end
+
+Note that throughout this process we didn't have to modify the UserCreator code, even when we transitioned
+to/from hark for different repsonses/styles.
+
+### Testing your listeners
+
+Don't pay any attention to hark when you're testing, hark is just a utility to create listeners, and so what
+you should be testing is the protocol.
+
+For example the service object tests will test functionality that pertains to the actual creation of the user,
+and will test that the correct message is sent to the response in those circumstances.  Whereas the controller tests
+will mock out the service object, and test what happens when the service object sends the messages to the response as
+dictated by the protocol.
+
+    describe UserCreator do
+      let(:service) { described_class.new }
+
+      describe "#call params, response" do
+        subject { service.call params, response }
+
+        let(:response) { double }
+
+        context "when the user succesfully saves"
+          let(:params) { {name: "created user", # and other successful user params }
+
+          it "sends #created_user to the response with the created user" do
+            response.should_receive(:created_user) do |user|
+              user.name.should == "created user"
+            end
+            subject
+          end
+        end
+
+        context "when the user succesfully saves"
+          let(:params) { {name: "invalid user", # and invalid user params }
+
+          it "sends #invalid_user to the response with the created user" do
+            response.should_receive(:invalid_user) do |user|
+              # test that the object passed is the invalid user
+            end
+            subject
+          end
+        end
+      end
+    end
+
+    describe NewUserController do
+      before { controller.stub(user_creator: user_creator) } # or some other sensible way of injecting a fake user_creator
+
+      let(:user_creator) { double "User creator" }
+      let(:user) { double "A user" }
+
+      context "when the user_creator is succesful" do
+        before do
+          user_creator.stub :call do |params, response|
+            response.created_user(user)
+          end
+        end
+
+        it "should redirect to the user"
+
+        it "should email the user"
+
+        it "should log the creation of the user"
+      end
+
+      context "when the user_creator says the params are invalid" do
+        before do
+          user_creator.stub :call do |params, response|
+            response.invalid_user(user)
+          end
+        end
+
+        it "should render new with the user"
+
+        it "should log something for the UX team"
+      end
+    end
+
 
 ## Contributing
 
