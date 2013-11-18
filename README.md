@@ -1,6 +1,12 @@
-# Hark [![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark) [![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark) [![Coverage Status](https://coveralls.io/repos/ianwhite/hark/badge.png?branch=master)](https://coveralls.io/r/ianwhite/hark?branch=master)
+# Hark
 
-Create an ad-hoc listener object with hark.
+[![Gem Version](https://badge.fury.io/rb/ianwhite-hark.png)](https://rubygems.org/gems/ianwhite-hark)
+[![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark)
+[![Dependency Status](https://gemnasium.com/ianwhite/hark.png)](https://gemnasium.com/ianwhite/hark)
+[![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark)
+[![Coverage Status](https://coveralls.io/repos/ianwhite/hark/badge.png)](https://coveralls.io/r/ianwhite/hark)
+
+Create a ad-hoc listeners with hark.
 
 ## Installation
 
@@ -16,62 +22,164 @@ Or install it yourself as:
 
     $ gem install ianwhite-hark
 
+## What & Why?
+
+**hark** enables you to create a 'listener' object very easily.  It's for programming in the 'hexagonal' or 'tell, do not ask' style.
+The consumers of hark listeners don't know anything about hark.  This makes refactoring easier.  For more detail see the 'Rationale' section.
+
 ## Usage
 
-The idea behind hark is that the objects that receive listeners shouldn't need to perform any ceremony on
-them, just treat them as objects that respond to messages.  It's up to the caller to provide these lsitener objects,
-and to decide how they behave, perhaps combining together listeners (in an subscriber fashion).  If required, these ad-hoc
-listeners can easily be refactored into classes in their own right, as the recievers don't need to know anything about
-hark.
+### Create a listener
 
-Tell don't ask style is encouraged with hark.  That said, the return value for a message sent to a hark listener is an array of all of the return values.
+To create a listener object use `hark`.
 
-    listener = hark success: ->{ "succeeded" }, failure: ->{ "failed" }
-    listener.success # => ["succeeded"]
-    listener.failure # => ["failed"]
-    listener.unknown # raises NoMethodError
+You can pass a symbol and block
 
-Listeners return an array of return values, but using return values is discouraged (tell don't ask)
-
-To create a listener that silently swallows unknown messages, send it the #lax method
-
-    listener = hark(success: ->{ "succeeded" }).lax
-    listener.success # => ["succeeded"]
-    listener.unknown # => []
-
-To make a lax listener strict again, send it the #strict method
-
-    listener = listener.strict
-
-To smush together listeners, use #hark
-
-    listener = listener.hark other_listener
-    listener = listener.hark emailer, logger
-    listener = hark(emailer, logger, twitter_notifier)
-
-To add new messages to a listener, use #hark
-
-    listener = listener.hark(:success) { "extra success" }
-    listener.success # => ["success", "extra success"]
-
-To decorate an object (of any sort) so that it becomes a hark listener (and therefore can be smushed etc)
-
-    listener = hark(object)
-
-The listener is immutable, #strict, #lax, and #hark all return new listeners
-
-Here's an example from a rails controller
-
-    def create
-      SignupNewUser.new params, hark(create_response, SignupEmailer.new)
+    hark :created do |user|
+      redirect_to(user, notice: "You have signed up!")
     end
 
-    # response block style
-    def create_response
-      hark do |on|
-        on.signed_up {|user| redirect_to user, notice: "Signed up!" }
-        on.invalid {|user| render "new", user: user }
+The following methods are more suitable for a listener with multiple messages.
+
+A hash with callables as keys
+
+    hark(
+      created: ->(user) { redirect_to(user, notice: "You have signed up!") },
+      invalid: ->(user) { @user = user; render "new" }
+    )
+
+    # assuming some methods for rendering and redirecting exist on the controller
+    hash created: method(:redirect_to_user), invalid: method(:render_new)
+
+Or, a 'respond_to' style block
+
+    hark do |on|
+      on.created {|user| redirect_to(user, notice: "You have signed up!") }
+      on.invalid {|user| @user = user; render "new" }
+    end
+
+### Strict & lax listeners
+
+By default, hark listeners are 'strict', they will only respond to the methods defined on them.
+
+You create a 'lax' listener, responding to any message, by sending the `lax` message.
+
+    listener = hark(:foo) { "Foo" }
+
+    listener.bar
+    # => NoMethodError: undefined method `bar' for #<Hark::StrictListener:0x007fc91a03e568>
+
+    listener = listener.lax
+    listener.bar
+    # => []
+
+### Combining listeners
+
+Here are some ways of combining listeners.
+
+    # redirect listener
+    listener = hark(created: method(:redirect_to_user))
+
+Add a message
+
+    listener = listener.hark :created do |user|
+      WelomeMailer.send_email(user)
+    end
+
+Combine with another listener
+
+    logger = listener.hark(created: ->(u) { logger.info "User #{u} created" } )
+    listener = listener.hark(logger)
+
+Combine with any object that support the same protocol
+
+    logger = UserLogger.new # responds to :created
+    listener = listener.hark(logger)
+
+Now, when listener is sent #created, all create handlers are called.
+
+### Return value
+
+Using the return value of a listener is not encouraged.  Hark is designed for a *tell, don't ask*
+style of coding.  That said the return value of a hark listener is an array of its handlers return values.
+
+    a = hark(:foo) { 'a' }
+    b = hark(:foo) { 'b' }
+    c = hark(:foo) { 'c' }
+
+    a.foo           # => ["a"]
+    hark(a,b).foo   # => ["a", "b"]
+    hark(a,b,c).foo # => ["a", "b", "c"]
+
+## Rationale
+
+When programming in the 'tell-dont-ask' or 'hexagonal' style, program flow is managed by passing listener, or
+response, objects to service objects, which call back depending on what happened.  This allows logic that is concerned with the caller's domain to remain isolated from the service object.
+
+The idea behind **hark** is that there should be little ceremony involved in the listener/response mechanics, and
+that simple listeners can easily be refactored into objects in their own right, without changing the protocols between
+the calling and servcie objects.
+
+To that end, service objects should not know anything other than the listener/response protocol, and shouldn't have to 'publish' their
+results beyond a simple method call.
+
+As a simple example, a user creation service object defines a response protocol as follows:
+
+* created_user(user) _the user was succesfully created_
+* invalid_user(user) _the user couldn't be created because it was invalid_
+
+The UserCreator object's main method will have some code as follows:
+
+    if user.save
+      response.created_user(user)
+    else
+      response.invalid_user(user)
+    end
+
+Let's say a controller is calling this, and you are using hark.  In the beginning you would do something like this:
+
+    def create
+      user_creator.call(user_params, hark do |on|
+        on.created_user {|user| redirect_to user, notice: "Welome!" }
+        on.invalid_user {|user| @user = user; render "new" }
+      end)
+    end
+
+This keeps the controller's handling of the user creation nicely separate from the saving of the user creator.
+
+Then, a requirement comes in to log the creation of users.  The first attempt might be this:
+
+    def create
+      user_creator.call(user_params, hark do |on|
+        on.created_user do |user|
+          redirect_to user, notice: "Welome!"
+          logger.info "User #{user} created"
+        end
+        on.invalid_user {|user| @user = user; render "new" }
       end
+    end
+
+Then a requirement comes in to email users on succesful creation, there's an UserEmailer that responds
+to the same protocol.  Also, the UX team want to log invalid users.
+
+There's quite a lot going on now, we can tie it up as follows:
+
+    def create
+      listener = hark(UserEmailer.new, crud_response, ux_team_response)
+      user_creator.call user_params, listener
+    end
+
+    # UserEmailer responds to #created_user(user)
+
+    def crud_response
+      hark do |on|
+        on.created {|user| redirect_to user, notice: "Welome!" }
+        on.invalid {|user| @user = user; render "new" }
+      end
+    end
+
+    def ux_team_response
+      hark(:invalid) {|user| logger.info("User invalid: #{user}") }
     end
 
 ## Contributing
