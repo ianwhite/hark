@@ -42,7 +42,7 @@ You can pass a symbol and block
 
 The following methods are more suitable for a listener with multiple messages.
 
-A hash with callables as keys
+A hash with callables as values
 
     hark(
       created: ->(user) { redirect_to(user, notice: "You have signed up!") },
@@ -50,7 +50,7 @@ A hash with callables as keys
     )
 
     # assuming some methods for rendering and redirecting exist on the controller
-    hash created: method(:redirect_to_user), invalid: method(:render_new)
+    hark(created: method(:redirect_to_user), invalid: method(:render_new))
 
 Or, a 'respond_to' style block
 
@@ -99,9 +99,15 @@ Combine with any object that support the same protocol
     logger = UserLogger.new # responds to :created
     listener = listener.hark(logger)
 
+Turn any object into a listener, adding new methods as we go
+
+    hark UserLogger.new do |on|
+      on.created {|user| Emailer.send_welcom_email(user) }
+    end
+
 Now, when listener is sent #created, all create handlers are called.
 
-### Sugar: #hearken
+### Sugar: `Kernel#hearken`
 
 Because of the precedence of the block operator, constructing ad-hoc listeners requires
 you to insert some parens, which might be seen as unsightly, e.g:
@@ -118,7 +124,7 @@ You may use Kernerl#hearken to create an ad-hoc listener using a passed block as
       on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
     end
 
-If you want to combine listeners with an ad-hoc blokc, you may pass a 0-arity block that is
+If you want to combine listeners with an ad-hoc block, you may pass a 0-arity block that is
 yielded as the listener
 
     seller.hearken :request_valuation, item do
