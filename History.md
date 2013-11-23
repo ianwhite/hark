@@ -1,6 +1,6 @@
 # History
 
-## master
+## 0.0.4
 
 * Adds Kernel#hearken
 * Adds coveralls & History
