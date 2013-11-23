@@ -91,8 +91,14 @@ describe Hark do
     it_should_behave_like "a success/failure hark listener"
   end
 
-  describe "hark object" do
+  describe "#hark(object)" do
     let(:listener) { hark PlainListener.new(transcript) }
+
+    it_should_behave_like "a success/failure hark listener"
+  end
+
+  describe "object.to_hark" do
+    let(:listener) { PlainListener.new(transcript).to_hark }
 
     it_should_behave_like "a success/failure hark listener"
   end
@@ -101,11 +107,27 @@ describe Hark do
     let(:logger) { hark(:signup_user) {|user| transcript << "User #{user} signed up" } }
     let(:emailer) { hark(:signup_user) {|user| transcript << "Emailed #{user}" } }
 
-    let(:listener) { logger.hark(emailer) }
+    shared_examples_for "combined listeners" do
+      before { listener.signup_user("Fred") }
 
-    before { listener.signup_user("Fred") }
+      it { transcript.should == ["User Fred signed up", "Emailed Fred"] }
+    end
 
-    it { transcript.should == ["User Fred signed up", "Emailed Fred"] }
+    it_behaves_like "combined listeners" do
+      let(:listener) { logger.hark(emailer) }
+    end
+
+    it_behaves_like "combined listeners" do
+      let(:listener) { hark(logger, emailer) }
+    end
+
+    it_behaves_like "combined listeners" do
+      let(:listener) do
+        hark logger do |on|
+          on.signup_user {|user| transcript << "Emailed #{user}" }
+        end
+      end
+    end
   end
 
   describe "lax/strict is preserved on #hark" do
@@ -118,5 +140,39 @@ describe Hark do
 
     it { expect{ listener.foo }.to_not raise_error }
     it { listener.foo.should == [false] }
+  end
+
+  describe "#hearken :method" do
+    let(:object) do
+      Object.new.tap do |obj|
+        class << obj
+          def foo arg1, arg2, listener
+            listener.foo(arg1)
+            listener.bar(arg2)
+          end
+        end
+      end
+    end
+
+    context "with 1 arity block" do
+      it "sends :method with an ad-hoc listener created from the block" do
+        object.hearken :foo, "ONE", "TWO" do |on|
+          on.foo {|a| transcript << [:foo, a] }
+          on.bar {|a| transcript << [:bar, a] }
+        end
+        transcript.should == [[:foo, "ONE"], [:bar, "TWO"]]
+      end
+    end
+
+    context "with 0 arity block" do
+      it "sends :method with listener created by yielding to the block" do
+        foo = hark(:foo) {|a| transcript << [:foo, a] }
+
+        object.hearken :foo, "ONE", "TWO" do
+          hark(foo, :bar) {|a| transcript << [:bar, a] }
+        end
+        transcript.should == [[:foo, "ONE"], [:bar, "TWO"]]
+      end
+    end
   end
 end

@@ -12,11 +12,7 @@ module Hark
     #
     def self.from(*args, &block)
       if block
-        if args.last.is_a?(Symbol)
-          args << {args.pop => block}
-        elsif args.empty?
-          args << block
-        end
+        args << (args.last.is_a?(Symbol) ? {args.pop => block} : block)
       end
 
       new args.map{|o| to_handler(o) }.flatten.freeze

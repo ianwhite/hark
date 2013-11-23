@@ -101,6 +101,33 @@ Combine with any object that support the same protocol
 
 Now, when listener is sent #created, all create handlers are called.
 
+### Sugar: #hearken
+
+Because of the precedence of the block operator, constructing ad-hoc listeners requires
+you to insert some parens, which might be seen as unsightly, e.g:
+
+    seller.request_valuation(item, (hark do |on|
+      on.valuation_requested {|valuation| redirect_to valuation}
+      on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
+    end))
+
+You may use Kernerl#hearken to create an ad-hoc listener using a passed block as follows
+
+    seller.hearken :request_valuation, item do |on|
+      on.valuation_requested {|valuation| redirect_to valuation}
+      on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
+    end
+
+If you want to combine listeners with an ad-hoc blokc, you may pass a 0-arity block that is
+yielded as the listener
+
+    seller.hearken :request_valuation, item do
+      hark valuation_notifier do |on|
+        on.valuation_requested {|valuation| redirect_to valuation}
+        on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
+      end
+    end
+
 ### Return value
 
 Using the return value of a listener is not encouraged.  Hark is designed for a *tell, don't ask*
