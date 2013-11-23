@@ -1,5 +1,9 @@
 # History
 
+## 0.0.6
+
+* remove Kernel#to_hark
+
 ## 0.0.5
 
 * ruby 1.8.7 compat

@@ -97,12 +97,6 @@ describe Hark do
     it_should_behave_like "a success/failure hark listener"
   end
 
-  describe "object.to_hark" do
-    let(:listener) { PlainListener.new(transcript).to_hark }
-
-    it_should_behave_like "a success/failure hark listener"
-  end
-
   describe "combine two listeners together" do
     let(:logger) { hark(:signup_user) {|user| transcript << "User #{user} signed up" } }
     let(:emailer) { hark(:signup_user) {|user| transcript << "Emailed #{user}" } }
