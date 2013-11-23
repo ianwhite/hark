@@ -24,7 +24,6 @@ module Hark
       when Dispatcher then object.handlers
       when Hash then AdHoc.new(object)
       when Proc then AdHoc.new(&object)
-      when Array then object.map{|o| to_handler(o) }
       else object
       end
     end
