@@ -9,6 +9,6 @@ module Kernel
 
   def hearken method, *args, &block
     listener = (block.arity == 1) ? hark(&block) : block.call
-    send method, *args, listener
+    send method, *args + [listener]
   end
 end

@@ -2,6 +2,7 @@
 
 ## master
 
+* Adds Kernel#hearken
 * Adds coveralls & History
 
 ## 0.0.3
