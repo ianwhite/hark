@@ -1,18 +1,18 @@
-# Hark
+# `heed` (and `hark`)
 
-[![Gem Version](https://badge.fury.io/rb/ianwhite-hark.png)](https://rubygems.org/gems/ianwhite-hark)
-[![Build Status](https://travis-ci.org/ianwhite/hark.png)](https://travis-ci.org/ianwhite/hark)
-[![Dependency Status](https://gemnasium.com/ianwhite/hark.png)](https://gemnasium.com/ianwhite/hark)
-[![Code Climate](https://codeclimate.com/github/ianwhite/hark.png)](https://codeclimate.com/github/ianwhite/hark)
-[![Coverage Status](https://coveralls.io/repos/ianwhite/hark/badge.png)](https://coveralls.io/r/ianwhite/hark)
+[![Gem Version](https://badge.fury.io/rb/heed.png)](https://rubygems.org/gems/heed)
+[![Build Status](https://travis-ci.org/ianwhite/heed.png)](https://travis-ci.org/ianwhite/heed)
+[![Dependency Status](https://gemnasium.com/ianwhite/heed.png)](https://gemnasium.com/ianwhite/heed)
+[![Code Climate](https://codeclimate.com/github/ianwhite/heed.png)](https://codeclimate.com/github/ianwhite/heed)
+[![Coverage Status](https://coveralls.io/repos/ianwhite/heed/badge.png)](https://coveralls.io/r/ianwhite/heed)
 
-Create a ad-hoc listeners with hark.
+Create and use ad-hoc listeners with hark and heed.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'ianwhite-hark', :require => 'hark'
+    gem 'heed'
 
 And then execute:
 
@@ -20,12 +20,12 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install ianwhite-hark
+    $ gem install heed
 
 ## What & Why?
 
-**hark** enables you to create a 'listener' object very easily.  It's for programming in the *hexagonal* or *tell, don't ask* style.
-The consumers of hark listeners don't know anything about hark.  Because hark makes it easy to create ad-hoc object, it's easy to get
+**heed** enables you to use 'listener' objects very easily.  It's for programming in the *hexagonal* or *tell, don't ask* style.
+The consumers of heed listeners don't know anything about heed.  Because heed makes it easy to create ad-hoc object, it's easy to get
 started with a tell-dont-ask style, in rails controllers for example.  For more detail see the 'Rationale' section.
 
 ## Usage
@@ -61,14 +61,14 @@ Or, a 'respond_to' style block
 
 ### Strict & lax listeners
 
-By default, hark listeners are 'strict', they will only respond to the methods defined on them.
+By default, heed listeners are 'strict', they will only respond to the methods defined on them.
 
 You create a 'lax' listener, responding to any message, by sending the `lax` message.
 
     listener = hark(:foo) { "Foo" }
 
     listener.bar
-    # => NoMethodError: undefined method `bar' for #<Hark::StrictListener:0x007fc91a03e568>
+    # => NoMethodError: undefined method `bar' for #<Heed::StrictListener:0x007fc91a03e568>
 
     listener = listener.lax
     listener.bar
@@ -102,7 +102,7 @@ Combine with any object that support the same protocol
 Turn any object into a listener, adding new methods as we go
 
     hark UserLogger.new do |on|
-      on.created {|user| Emailer.send_welcom_email(user) }
+      on.created {|user| Emailer.send_welcome_email(user) }
     end
 
 Now, when listener is sent #created, all create handlers are called.
@@ -125,7 +125,8 @@ You may use #heed to create an ad-hoc listener using a passed block as follows
     end
 
 If you want to combine listeners with an ad-hoc block, you may pass a 0-arity block that is
-yielded as the listener
+yielded as the listener.  This means you can use the block to wire up listeners, adding
+extra ones that have the caller's binding (useful in controllers for example)
 
     heed seller, :request_valuation, item do
       hark valuation_notifier do |on|
@@ -136,8 +137,8 @@ yielded as the listener
 
 ### Return value
 
-Using the return value of a listener is not encouraged.  Hark is designed for a *tell, don't ask*
-style of coding.  That said the return value of a hark listener is an array of its handlers return values.
+Using the return value of a listener is not encouraged.  Heed is designed for a *tell, don't ask*
+style of coding.  That said the return value of a heed listener is an array of its handlers return values.
 
     a = hark(:foo) { 'a' }
     b = Object.new.tap {|o| o.singleton_class.send(:define_method, :foo) { 'b' } }
@@ -149,14 +150,14 @@ style of coding.  That said the return value of a hark listener is an array of i
 
 ### Immutable
 
-Hark listeners are immutable and `#lax`, `#strict`, and `#hark` all return new listeners.
+Heed listeners are immutable and `#lax`, `#strict`, and `#heed` all return new listeners.
 
 ## Rationale
 
 When programming in the 'tell-dont-ask' or 'hexagonal' style, program flow is managed by passing listener, or
 response, objects to service objects, which call back depending on what happened.  This allows logic that is concerned with the caller's domain to remain isolated from the service object.
 
-The idea behind **hark** is that there should be little ceremony involved in the listener/response mechanics, and
+The idea behind **heed** is that there should be little ceremony involved in the listener/response mechanics, and
 that simple listeners can easily be refactored into objects in their own right, without changing the protocols between
 the calling and servcie objects.
 
@@ -176,13 +177,13 @@ The UserCreator object's main method will have some code as follows:
       response.invalid_user(user)
     end
 
-Let's say a controller is calling this, and you are using hark.  In the beginning you would do something like this:
+Let's say a controller is calling this, and you are using heed.  In the beginning you would do something like this:
 
     def create
-      user_creator.call(user_params, hark do |on|
+      heed user_creator, :create_user, user_params do |on|
         on.created_user {|user| redirect_to user, notice: "Welome!" }
         on.invalid_user {|user| @user = user; render "new" }
-      end)
+      end
     end
 
 This keeps the controller's handling of the user creation nicely separate from the saving of the user creator.
@@ -190,7 +191,7 @@ This keeps the controller's handling of the user creation nicely separate from t
 Then, a requirement comes in to log the creation of users.  The first attempt might be this:
 
     def create
-      user_creator.call(user_params, hark do |on|
+      heed user_creator, :create_user, user_params do |on|
         on.created_user do |user|
           redirect_to user, notice: "Welome!"
           logger.info "User #{user} created"
@@ -205,8 +206,9 @@ to the same protocol.  Also, the UX team want to log invalid users.
 There's quite a lot going on now, we can tie it up as follows:
 
     def create
-      response = hark(ui_response, UserEmailer.new, ux_team_response)
-      user_creator.call user_params, response
+      heed user_creator, :create_user, user_params do
+        hark ui_response, UserEmailer.new, ux_team_response
+      end
     end
 
     # UserEmailer responds to #created_user(user)
@@ -222,12 +224,13 @@ There's quite a lot going on now, we can tie it up as follows:
       hark(:invalid_user) {|user| logger.info("User invalid: #{user}") }
     end
 
-If some of the response code gets hairy, we can easily swap out hark ad-hoc objects for 'proper' ones.
+If some of the response code gets hairy, we can easily swap out heed ad-hoc objects for 'proper' ones.
 For example, the UI response might get a bit hairy, and so we make a new object.
 
     def create
-      response = hark(UiResponse.new(self), UserEmailer.new, ux_team_response)
-      user_creator.call user_params, response
+      heed user_creator, :create_user, user_params do
+        hark UiResponse.new(self), UserEmailer.new, ux_team_response
+      end
     end
 
     class UiResponse < SimpleDelegator
@@ -245,11 +248,11 @@ For example, the UI response might get a bit hairy, and so we make a new object.
     end
 
 Note that throughout this process we didn't have to modify the UserCreator code, even when we transitioned
-to/from hark for different repsonses/styles.
+to/from heed/hark for different repsonses/styles.
 
 ### Testing your listeners
 
-Don't pay any attention to hark when you're testing, hark is just a utility to create listeners, and so what
+Don't pay any attention to heed when you're testing, heed is just a utility to create listeners, and so what
 you should be testing is the protocol.
 
 For example the service object tests will test functionality that pertains to the actual creation of the user,
@@ -322,6 +325,8 @@ dictated by the protocol.
       end
     end
 
+    Note that in the above tests, there is *no mention of hark or heed*.  This ensures a smooth transition to 'full blown'
+    response objects should the need occur.
 
 ## Contributing
 

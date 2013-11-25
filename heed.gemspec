@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Heed::VERSION
   spec.authors       = ["Ian White"]
   spec.email         = ["ian.w.white@gmail.com"]
-  spec.description   = %q{Create ad-hoc listener objects with impunity}
+  spec.description   = %q{Create and use ad-hoc listeners with hark and heed}
   spec.summary       = %q{Heed is a gem that enables  writing code in a "hexagonal architecture" or "tell don't ask" style}
   spec.homepage      = "http://github.com/ianwhite/heed"
   spec.license       = "MIT"
