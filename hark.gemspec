@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'hark/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "ianwhite-hark"
+  spec.name          = "heed"
   spec.version       = Hark::VERSION
   spec.authors       = ["Ian White"]
   spec.email         = ["ian.w.white@gmail.com"]
