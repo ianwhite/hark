@@ -3,8 +3,8 @@ module Kernel
     Hark.from *args, &block
   end
 
-  def hearken method, *args, &block
+  def heed object, *args, &block
     listener = (block.arity == 1) ? hark(&block) : block.call
-    send method, *args + [listener]
+    object.send *args + [listener]
   end
 end

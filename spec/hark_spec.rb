@@ -136,7 +136,7 @@ describe Hark do
     it { listener.foo.should == [false] }
   end
 
-  describe "#hearken :method" do
+  describe "Kernel#heed object, :method" do
     let(:object) do
       Object.new.tap do |obj|
         class << obj
@@ -150,7 +150,7 @@ describe Hark do
 
     context "with 1 arity block" do
       it "sends :method with an ad-hoc listener created from the block" do
-        object.hearken :foo, "ONE", "TWO" do |on|
+        heed object, :foo, "ONE", "TWO" do |on|
           on.foo {|a| transcript << [:foo, a] }
           on.bar {|a| transcript << [:bar, a] }
         end
@@ -162,7 +162,7 @@ describe Hark do
       it "sends :method with listener created by yielding to the block" do
         foo = hark(:foo) {|a| transcript << [:foo, a] }
 
-        object.hearken :foo, "ONE", "TWO" do
+        heed object, :foo, "ONE", "TWO" do
           hark(foo, :bar) {|a| transcript << [:bar, a] }
         end
         transcript.should == [[:foo, "ONE"], [:bar, "TWO"]]

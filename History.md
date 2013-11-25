@@ -1,5 +1,9 @@
 # History
 
+## 0.0.8
+
+* #hearken becomes #heed, with more functional semantics
+
 ## 0.0.7
 
 * Change gem name to 'heed'

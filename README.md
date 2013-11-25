@@ -30,7 +30,7 @@ started with a tell-dont-ask style, in rails controllers for example.  For more 
 
 ## Usage
 
-### Create a listener
+### `hark`: create a listener
 
 To create a listener object use `hark`.
 
@@ -107,7 +107,7 @@ Turn any object into a listener, adding new methods as we go
 
 Now, when listener is sent #created, all create handlers are called.
 
-### Sugar: `Kernel#hearken`
+### `heed` call a message with an ad-hoc listener
 
 Because of the precedence of the block operator, constructing ad-hoc listeners requires
 you to insert some parens, which might be seen as unsightly, e.g:
@@ -117,9 +117,9 @@ you to insert some parens, which might be seen as unsightly, e.g:
       on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
     end))
 
-You may use Kernerl#hearken to create an ad-hoc listener using a passed block as follows
+You may use #heed to create an ad-hoc listener using a passed block as follows
 
-    seller.hearken :request_valuation, item do |on|
+    heed seller, :request_valuation, item do |on|
       on.valuation_requested {|valuation| redirect_to valuation}
       on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
     end
@@ -127,7 +127,7 @@ You may use Kernerl#hearken to create an ad-hoc listener using a passed block as
 If you want to combine listeners with an ad-hoc block, you may pass a 0-arity block that is
 yielded as the listener
 
-    seller.hearken :request_valuation, item do
+    heed seller, :request_valuation, item do
       hark valuation_notifier do |on|
         on.valuation_requested {|valuation| redirect_to valuation}
         on.invalid_item {|item| redirect_to item, error: "Item not evaluable" }
