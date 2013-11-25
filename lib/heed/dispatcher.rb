@@ -1,4 +1,4 @@
-module Hark
+module Heed
   class Dispatcher
     #  from(:success) do
     #    "success"

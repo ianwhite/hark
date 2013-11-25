@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'hark'
+require 'heed'
 
-describe Hark do
+describe Heed do
   let(:transcript) { [] }
 
   class PlainListener < Struct.new(:transcript)
@@ -125,8 +125,8 @@ describe Hark do
   end
 
   describe "lax/strict is preserved on #hark" do
-    it { hark.lax.hark.should be_a Hark::LaxListener }
-    it { hark.strict.hark.should be_a Hark::StrictListener }
+    it { hark.lax.hark.should be_a Heed::LaxListener }
+    it { hark.strict.hark.should be_a Heed::StrictListener }
   end
 
   describe "when methods return falsy" do

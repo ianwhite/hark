@@ -1,10 +1,10 @@
 module Kernel
   def hark *args, &block
-    Hark.from *args, &block
+    Heed.listener *args, &block
   end
 
   def heed object, *args, &block
-    listener = (block.arity == 1) ? hark(&block) : block.call
+    listener = (block.arity == 1) ? Heed.listener(&block) : block.call
     object.send *args + [listener]
   end
 end

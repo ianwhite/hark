@@ -1,4 +1,4 @@
-module Hark
+module Heed
   # AdHoc is a tiny class to facilitate creating an ad-hoc object that from either a hash or proc.
   #
   # Eg. from a hash:

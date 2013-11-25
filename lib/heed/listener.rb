@@ -1,4 +1,4 @@
-module Hark
+module Heed
   # A Listener holds a dispatcher, which it dispatches messages to
   #
   # A listener is by default a 'strict' listener, it will raise NoMethodError if

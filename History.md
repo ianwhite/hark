@@ -1,5 +1,9 @@
 # History
 
+## 0.1.0
+
+* Hark becomes Heed
+
 ## 0.0.8
 
 * #hearken becomes #heed, with more functional semantics
