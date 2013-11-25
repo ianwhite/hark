@@ -1,5 +1,9 @@
 # History
 
+## 0.0.7
+
+* Change gem name to 'heed'
+
 ## 0.0.6
 
 * remove Kernel#to_hark
